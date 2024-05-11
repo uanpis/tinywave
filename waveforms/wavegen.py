@@ -1,9 +1,14 @@
+
+# generates waveform data assembly code
+
 import argparse
 import math as m
 
 prologue = "\
+\t.file\t\"$WAVE\"\n\
 \t.data\n\
-\t.align\t0x0100\n\
+\t.balign\t0x0100\n\
+$WAVE:\
 "
 
 def main():
@@ -19,14 +24,13 @@ def clamp(num, minimum, maximum):
 
 def sinegen():
     file = open("sine.s","w")
-    file.write("\t.file\t\"sine\"\n")
-    file.write(prologue)
+    file.write(prologue.replace("$WAVE", "sine"))
     for i in range(16):
         file.write("\t.byte ")
         for j in range(16):
             n = 16*i + j
             result = int(128 + 128 * (m.sin(m.pi*n/128)))
-            result = clamp(result, 0, 256)
+            result = clamp(result, 0, 0xFF)
             file.write(hex(result))
             if j < 15:
                 file.write(", ")

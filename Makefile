@@ -2,14 +2,18 @@ AS = avr-as -mmcu=avrxmega3
 LD = avr-ld -m avrxmega3 -A avrxmega3
 PYTHON = python
 
-main.out: main.o main.ld
-	${LD} -T main.ld -o main.out main.o
+main.out: main.ld main.o waveforms/sine.o
+	${LD} -T main.ld -o main.out main.o waveforms/sine.o
 
-main.o: main.s waveforms/sine.s
+main.o: main.s
 	${AS} -o main.o main.s
 
+waveforms/sine.o: waveforms/sine.s
+	${AS} -o waveforms/sine.o waveforms/sine.s
+
 waveforms/sine.s: waveforms/wavegen.py
-	${PYTHON} waveforms/wavegen.py sine
+	cd waveforms &&\
+	${PYTHON} wavegen.py sine
 
 upload:
 	avrdude 		\
@@ -21,5 +25,6 @@ upload:
 
 clean:
 	@rm -f waveforms/*.s
+	@rm -f waveforms/*.o
 	@rm -f *.o
 	@rm -f *.out
