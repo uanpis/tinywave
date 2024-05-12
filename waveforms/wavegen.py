@@ -8,6 +8,7 @@ prologue = "\
 \t.file\t\"$WAVE\"\n\
 \t.data\n\
 \t.balign\t0x0100\n\
+\t.global\t$WAVE\n\
 $WAVE:\
 "
 
