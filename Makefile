@@ -2,26 +2,20 @@ AS = avr-as -mmcu=avrxmega3
 LD = avr-ld -m avrxmega3 -A avrxmega3
 PYTHON = python
 
-main.out: main.ld main.o waveforms/sine.o waveforms/saw.o
-	${LD} -T main.ld -o main.out \
-		main.o \
-		waveforms/sine.o \
-		waveforms/saw.o
+objects = main.o \
+	  waveforms/sine.o \
+	  waveforms/saw.o
 
-main.o: main.s
-	${AS} -o main.o main.s
+main.out: main.ld $(objects)
+	${LD} -T main.ld -o main.out $(objects)
 
-waveforms/sine.o: waveforms/sine.s
-	${AS} -o waveforms/sine.o waveforms/sine.s
-waveforms/sine.s: waveforms/wavegen.py
+$(filter %.o, $(objects)): %.o: %.s
+	${AS} -o $@ $<
+
+waveforms/%.s: waveforms/wavegen.py
 	cd waveforms &&\
-	${PYTHON} wavegen.py sine
+	${PYTHON} wavegen.py $*
 
-waveforms/saw.o: waveforms/saw.s
-	${AS} -o waveforms/saw.o waveforms/saw.s
-waveforms/saw.s: waveforms/wavegen.py
-	cd waveforms &&\
-	${PYTHON} wavegen.py saw
 upload:
 	avrdude 		\
 	-p t404 		\
