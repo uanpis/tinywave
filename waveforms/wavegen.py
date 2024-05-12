@@ -34,7 +34,7 @@ def sinegen():
             file.write("\t.byte ")
         else:
             file.write(", ")
-        result = int(128 + 128 * (m.sin(m.pi*i/128)))
+        result = int(128 + 120 * (m.sin(m.pi*i/128)))
         result = clamp(result, 0, 0xFF)
         file.write(hex(result))
     file.write("\n")
