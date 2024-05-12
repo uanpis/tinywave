@@ -1,4 +1,5 @@
 ZERO = 0x01
+ONE = 0x02
 TMP1 = 0x10
 TMP2 = 0x11
 WL = 0x18
@@ -19,11 +20,18 @@ SREG = 0x3F
 	.section .vect,	"ax"
 	.org	0x00
 rst_v:	rjmp	reset
+	.org	0x10
+ovf_v:	rjmp	ovf
 	
 	.text
+ovf:	sts	0x0A0B,	ONE	; clear OVF interrupt flag
+	reti
+
 reset:
-	; clear ZERO reg
-	eor	ZERO,	ZERO
+	eor	ZERO,	ZERO	; clear ZERO reg
+	mov	ONE,	ZERO	; set ONE reg
+	inc	ONE
+
 
 	; reset stack pointer to 0x3FFF
 	ldi	TMP1,	0xFF
@@ -34,6 +42,23 @@ reset:
 	; set clock to 20Mhz
 	ldi	TMP1,	0xD8	;
 	out	CCP,	TMP1	; unlock protected registers
-	sts	0x0061,	ZERO_R	; disable clock prescaler
+	sts	0x61,	ZERO	; disable clock prescaler
+
+	; init TCA0 as pwm output on PB0
+	sts	0x0420,	ONE	; set PB0 to output
+
+	ldi	TMP1,	0xFF	; set period to 255
+	sts	0x0A26,	TMP1	;
+	sts	0x0A27,	ZERO	;
+
+	ldi	TMP1,	0x7F	; set pw to 127
+	sts	0x0A28,	TMP1	;
+	sts	0x0A29,	ZERO	;
+
+	ldi	TMP1,	0x13	; enable CMP0, set WGMODE to SINGLESLOPE
+	sts	0x0A01,	TMP1	;
+
+	sts	0x0A0A,	ONE	; enable OVF interrupt
+	sts	0x0A00, ONE	; enable TCA0, clk 20Mhz
 
 loop:	rjmp	loop
