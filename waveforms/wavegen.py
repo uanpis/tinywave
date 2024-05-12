@@ -27,29 +27,29 @@ def clamp(num, minimum, maximum):
 def sinegen():
     file = open("sine.s","w")
     file.write(prologue.replace("$WAVE", "sine"))
-    for i in range(16):
-        file.write("\t.byte ")
-        for j in range(16):
-            n = 16*i + j
-            result = int(128 + 128 * (m.sin(m.pi*n/128)))
-            result = clamp(result, 0, 0xFF)
-            file.write(hex(result))
-            if j < 15:
-                file.write(", ")
-        file.write("\n")
+    for i in range(256):
+        if i % 8 == 0:
+            file.write("\n")
+            file.write("\t.byte ")
+        else:
+            file.write(", ")
+        result = int(128 + 128 * (m.sin(m.pi*i/128)))
+        result = clamp(result, 0, 0xFF)
+        file.write(hex(result))
+    file.write("\n")
     return
 
 def sawgen():
     file = open("saw.s","w")
     file.write(prologue.replace("$WAVE", "saw"))
-    for i in range(16):
-        file.write("\t.byte ")
-        for j in range(16):
-            n = 16*i + j
-            file.write(hex(n))
-            if j < 15:
-                file.write(", ")
-        file.write("\n")
+    for i in range(256):
+        if i % 8 == 0:
+            file.write("\n")
+            file.write("\t.byte ")
+        else:
+            file.write(", ")
+        file.write(hex(i))
+    file.write("\n")
     return
 
 
