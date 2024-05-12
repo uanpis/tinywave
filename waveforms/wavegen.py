@@ -17,6 +17,8 @@ def main():
     args    = parser.parse_args()
     if args.wave == "sine":
         sinegen()
+    elif args.wave == "saw":
+        sawgen()
     return
 
 def clamp(num, minimum, maximum):
@@ -36,6 +38,20 @@ def sinegen():
                 file.write(", ")
         file.write("\n")
     return
+
+def sawgen():
+    file = open("saw.s","w")
+    file.write(prologue.replace("$WAVE", "saw"))
+    for i in range(16):
+        file.write("\t.byte ")
+        for j in range(16):
+            n = 16*i + j
+            file.write(hex(n))
+            if j < 15:
+                file.write(", ")
+        file.write("\n")
+    return
+
 
 if __name__ == "__main__":
     main()
