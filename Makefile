@@ -3,8 +3,10 @@ LD = avr-ld -m avrxmega3 -A avrxmega3
 PYTHON = python
 
 objects = main.o \
-	  waveforms/sine.o \
-	  waveforms/saw.o
+		  midi.o \
+		  delay.o \
+		  waveforms/sine.o \
+		  waveforms/saw.o
 
 main.out: main.ld $(objects)
 	${LD} -T main.ld -o main.out $(objects)
