@@ -1,0 +1,9 @@
+
+SRAM layout:
+
+0x3F00	MIDI INSTRUCTION FIFO BUFFER
+0x3F10
+  |
+  |		  ^
+  |		  |
+0x3FFF	STACK
