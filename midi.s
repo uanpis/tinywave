@@ -22,7 +22,7 @@ midi_rxc:
 	push	XH
 	push	TMP1
 	push	TMP2
-	in	TMP2	SREG
+	in	TMP2,	SREG
 
 	inc	W_PTR		; increment write pointer,
 	ldi	TMP1,	0x0F	; modulo 16
@@ -47,6 +47,7 @@ midi_update:
 	push	TMP1
 	cp	R_PTR,	W_PTR
 	breq	update_end
+
 newbyte:
 	inc	R_PTR		; increment read pointer,
 	ldi	TMP1,	0x0F	; modulo 16
@@ -58,24 +59,49 @@ newbyte:
 	andi	DATA,	0x80	; check DATA bit 7
 	pop	DATA
 	breq	databyte	; if not set, go to databyte. else statusbyte
+
 statusbyte:			
+	cbi	FLAGS,	0	; set next byte flag to byte 0
 	out	STATUS,	DATA	; set running status
-	andi	DATA,	0xF0	; mask first four bits
-	cpi	DATA,	0x80	; compare to "note off"
-	breq	noteoff		; if equal, go to noteoff
-	cpi	DATA,	0x90	; compare to "note on"
-	breq	noteon		; if equal, go to noteon
+	andi	DATA,	0xF0	; mask first four bits (ignore channel data)
+	cpi	DATA,	0x80	; if DATA is "note off"
+	breq	status_nof	; then go to noteoff
+	cpi	DATA,	0x90	; else if DATA is "note on"
+	breq	status_non	; then go to noteon
+	rjmp	update_end	; else end
+status_nof:
+	sbi	FLAGS,	1	; set note off flag
 	rjmp	update_end
-noteoff:
-	ldi	TMP1,	0x02	; turn off debug LED
-	sts	0x0426,	TMP1	;
+status_non:
+	sbi	FLAGS,	2	; set note on flag
 	rjmp	update_end
-noteon:
-	ldi	TMP1,	0x02	; turn on debug LED
-	sts	0x0425,	TMP1	;
-	rjmp	update_end
+
 databyte:
-	rjmp	update_end	; else, end
+	sbic	FLAGS,	0	; if byte1 flag set
+	rjmp	byte1		; then go to byte1
+byte0:
+	sbi	FLAGS,	0	; set next byte flag to byte 1
+	sbic	FLAGS,	1	; if note off flag set
+	rjmp	byte0_nof	; then go to byte0_nof
+	sbic	FLAGS,	2	; else if note on flag set
+	rjmp	byte0_non	; then go to byte0_non
+	rjmp	update_end	; else end
+byte0_nof:
+	cbi	FLAGS,	1	; clear note off flag
+	cbi	0x05,	1	; turn off debug LED
+	rjmp	update_end
+byte0_non:
+	cbi	FLAGS,	2	; clear note on flag
+	sbi	0x05,	1	; turn on debug LED
+	out	NOTE,	DATA	; write to NOTE
+	rjmp	update_end
+
+byte1:
+	rjmp	byte1_end
+byte1_end:
+	out	FLAGS,	ZERO	; clear all flags
+	rjmp	update_end
+
 update_end:
 	pop	TMP1
 	pop	XH

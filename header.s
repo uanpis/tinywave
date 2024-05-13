@@ -3,18 +3,14 @@
 	ZERO	= 0x01
 	ONE	= 0x02
 
+	/* UART RX fifo pointers*/
 	W_PTR	= 5
 	R_PTR	= 6
 
 	TMP1	= 16
 	TMP2	= 17
 
-	RS_REG	= 18
-
 	DATA	= 19
-
-	DLYL	= 24
-	DLYH	= 25
 
 	;WL	= 0x18
 	;WH	= 0x19
@@ -28,8 +24,9 @@
 
 	STATUS	= 0x1C
 	FLAGS	= 0x1D
-	; bit 0: rxc
-	; bit 1: note on/off
+	; bit 0: clear = byte0, set = byte1
+	; bit 1: note off
+	; bit 2: note on
 	NOTE	= 0x1E
 
 	CCP	= 0x34
