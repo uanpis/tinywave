@@ -4,7 +4,6 @@ PYTHON = python
 
 objects = main.o \
 		  midi.o \
-		  delay.o \
 		  waveforms/sine.o \
 		  waveforms/saw.o
 
