@@ -82,6 +82,7 @@ loop:
 
 update_note:
 	in	TMP1,	NOTE
+	mov	TMP2,	ONE
 	rcall	mod12
 	ldi	YH,	hi8(notes)
 	subi	YH,	0x80
@@ -89,14 +90,23 @@ update_note:
 	subi	YL,	0xEA
 	sub	YL,	TMP1
 	sub	YL,	TMP1
-	ldd	TMP1,	Y+1
-	sts	0x0A4C,	TMP1
-	sts	0x0A4D,	ZERO
+	ld	WL,	Y
+	ldd	WH,	Y+1
+l1:	
+	dec	TMP2
+	breq	e1
+	lsr	WH
+	ror	WL
+	rjmp	l1
+e1:
+	sts	0x0A4C,	WL
+	sts	0x0A4D,	WH
 	ret
 
 
 mod12:
 	/* TMP1 = TMP1 % 12 */
+	inc	TMP2
 	subi	TMP1,	0x0C	; while TMP > 0, TMP -= 12
 	brpl	mod12		;
 	subi	TMP1,	0xF4	; TMP += 12

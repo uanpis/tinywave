@@ -12,8 +12,8 @@
 
 	DATA	= 19
 
-	;WL	= 0x18
-	;WH	= 0x19
+	WL	= 0x18
+	WH	= 0x19
 
 	XL	= r26
 	XH	= r27
