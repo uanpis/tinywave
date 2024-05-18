@@ -17,7 +17,10 @@ tcb_int:
 	in	TMP1,	SREG
 	push	TMP2
 
-	inc	ZL		; increment Z pointer
+	add	POSL,	INCL
+	adc	POSH,	INCH
+
+	mov	ZL,	POSH	; increment Z pointer
 	lpm	TMP2,	Z	; set pw
 	sts	0x0A38,	TMP2	;
 	sts	0x0A39,	ZERO	;
@@ -60,7 +63,7 @@ rst:	cli			; global interrupt disable
 	/* init TCB0 on periodic interrupt mode */
 	ldi	TMP1,	0xFF
 	sts	0x0A4C,	TMP1	; set period to 255
-	sts	0x0A4D,	ZERO	;
+	sts	0x0A4D,	ZERO
 	sts	0x0A45,	ONE	; enable interrupt
 	sts	0x0A40,	ONE	; enable TCB0, clk 20Mhz
 
@@ -75,6 +78,8 @@ rst:	cli			; global interrupt disable
 
 	ldi	ZL,	lo8(sine)
 	ldi	ZH,	hi8(sine)
+	ldi	TMP1,	0x60	; set note to middle C
+	out	NOTE,	TMP1
 loop:
 	rcall	midi_update
 	rcall	update_note
@@ -82,32 +87,42 @@ loop:
 
 update_note:
 	in	TMP1,	NOTE
-	mov	TMP2,	ONE
-	rcall	mod12
+	rcall	div12		; TMP1 /= 12 ; TMP2 = TMP1 % 12
+
+	dec	TMP2
 	ldi	YH,	hi8(notes)
 	subi	YH,	0x80
 	ldi	YL,	lo8(notes)
-	subi	YL,	0xEA
-	sub	YL,	TMP1
-	sub	YL,	TMP1
+	add	YL,	TMP2
+	add	YL,	TMP2
 	ld	WL,	Y
 	ldd	WH,	Y+1
+
+	ldi	TMP3,	0x0C
+	sub	TMP3,	TMP1
 l1:	
-	dec	TMP2
+	dec	TMP3
 	breq	e1
 	lsr	WH
 	ror	WL
 	rjmp	l1
 e1:
-	sts	0x0A4C,	WL
-	sts	0x0A4D,	WH
+	mov	INCL,	WL
+	mov	INCH,	WH
 	ret
 
 
-mod12:
-	/* TMP1 = TMP1 % 12 */
-	inc	TMP2
-	subi	TMP1,	0x0C	; while TMP > 0, TMP -= 12
-	brpl	mod12		;
-	subi	TMP1,	0xF4	; TMP += 12
+div12:
+	/* TMP1 /= 12; TMP2 = TMP1 % 12 */
+	inc	TMP1
+	mov	TMP2,	TMP1	; save dividend to tmp2
+	ldi	TMP3,	0xAA
+	mul	TMP1,	TMP3	; r1, r0 = (TMP1+1) * 0xAA
+	mov	TMP1,	r1	; get high byte
+	lsr	TMP1		; TMP1 >>= 3
+	lsr	TMP1		;
+	lsr	TMP1		;
+	ldi	TMP3,	0x0C	; TMP2 = TMP2 - 12*TMP1 -> remainder
+	mul	TMP3,	TMP1	;
+	sub	TMP2,	r0	; 
 	ret

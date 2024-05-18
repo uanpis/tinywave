@@ -1,14 +1,22 @@
 	.file "header"
 
-	ZERO	= 0x01
-	ONE	= 0x02
+	ZERO	= 2
+	ONE	= 3
 
 	/* UART RX fifo pointers*/
 	W_PTR	= 5
 	R_PTR	= 6
 
+	/* periodic increment */
+	INCL	= 7
+	INCH	= 8
+	/* fixed point 8+8bit pointer location */
+	POSL	= 9
+	POSH	= 10
+
 	TMP1	= 16
 	TMP2	= 17
+	TMP3	= 18
 
 	DATA	= 19
 
