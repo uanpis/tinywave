@@ -4,15 +4,15 @@
 	.section .vect,	"ax"
 	.org	0x00
 rst_v:	rjmp	rst
-	.org	0x1A
-tcb_v:	rjmp	tcb_int
+	.org	0x10
+ovf_v:	rjmp	ovf
 	.org	0x2C
 rxc_v:	rjmp	midi_rxc
 	
 	.text
 
-tcb_int:
-	/* TCB0 interrupt service routine */
+ovf:
+	/* TCA0 overflow interrupt service routine */
 	push	TMP1
 	in	TMP1,	SREG
 	push	TMP2
@@ -24,7 +24,7 @@ tcb_int:
 	lpm	TMP2,	Z	; set pw
 	sts	0x0A38,	TMP2	;
 	sts	0x0A39,	ZERO	;
-	sts	0x0A46,	ONE	; clear interrupt flag
+	sts	0x0A0B,	ONE	; clear interrupt flag
 
 	pop	TMP2
 	out	SREG,	TMP1
@@ -57,14 +57,13 @@ rst:	cli			; global interrupt disable
 	sts	0x0A29,	ZERO	;
 	ldi	TMP1,	0x13	; enable CMP0, set WGMODE to SINGLESLOPE
 	sts	0x0A01,	TMP1	;
-	; sts	0x0A0A,	ONE	; enable OVF interrupt */
+	sts	0x0A0A,	ONE	; enable OVF interrupt */
 	sts	0x0A00, ONE	; enable TCA0, clk 20Mhz
 
 	/* init TCB0 on periodic interrupt mode */
 	ldi	TMP1,	0xFF
 	sts	0x0A4C,	TMP1	; set period to 255
 	sts	0x0A4D,	ZERO
-	sts	0x0A45,	ONE	; enable interrupt
 	sts	0x0A40,	ONE	; enable TCB0, clk 20Mhz
 
 	rcall	midi_init
